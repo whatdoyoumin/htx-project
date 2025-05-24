@@ -1,0 +1,100 @@
+services:
+  elasticsearch1:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+    container_name: elasticsearch1
+    environment:
+      - node.name=es1
+      - cluster.name=cv-transcriptions-cluster
+      - discovery.seed_hosts=elasticsearch2
+      - cluster.initial_master_nodes=es1,es2
+      - bootstrap.memory_lock=true
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata1:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - es_net
+    healthcheck:
+      test: curl -f http://localhost:9200 || exit 1
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  elasticsearch2:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+    container_name: elasticsearch2
+    environment:
+      - node.name=es2
+      - cluster.name=cv-transcriptions-cluster
+      - discovery.seed_hosts=elasticsearch1
+      - cluster.initial_master_nodes=es1,es2
+      - bootstrap.memory_lock=true
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata2:/usr/share/elasticsearch/data
+    networks:
+      - es_net
+
+  search-ui:
+    build: ./search-ui
+    container_name: search-ui
+    environment:
+      - ELASTICSEARCH_HOST=elasticsearch1
+      - ELASTICSEARCH_PORT=9200
+      - ELASTICSEARCH_INDEX=cv-transcriptions
+    ports:
+      - "3000:3000"
+    depends_on:
+      - elasticsearch1
+    networks:
+      - es_net
+
+  asr:
+    build:
+      context: .
+      dockerfile: asr/Dockerfile
+    container_name: asr
+    ports:
+      - "5000:5000"
+    networks:
+      - es_net
+
+  cv-index:
+    build:
+      context: ./elastic-backend
+    container_name: cv-index
+    environment:
+      - ELASTICSEARCH_HOST=elasticsearch1
+      - ELASTICSEARCH_PORT=9200
+    volumes:
+      - ./common_voice:/app/common_voice
+    depends_on:
+      elasticsearch1:
+        condition: service_healthy
+    command: python cv-index.py
+    networks:
+      - es_net
+
+volumes:
+  esdata1:
+  esdata2:
+
+networks:
+  es_net:
+    driver: bridge

@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.DS_Store
+data/
+common_voice.zip
+common_voice/
+/common_voice
+common voice
+venv/
+.venv/
+env/
+.env
+harvard.mp3
+common_voice.zip

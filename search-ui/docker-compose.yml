@@ -1,0 +1,16 @@
+# search-ui/docker-compose.yml
+services:
+  search-ui:
+    build: .
+    container_name: search-ui
+    environment:
+      ELASTICSEARCH_HOST: elasticsearch1
+      ELASTICSEARCH_INDEX: cv-transcriptions
+    ports:
+      - "3000:3000"
+    networks:
+      - es_net
+
+networks:
+  es_net:
+    external: true
