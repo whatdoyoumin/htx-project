@@ -12,3 +12,6 @@ env/
 .env
 harvard.mp3
 common_voice.zip
+test_connection.py
+images
+deployment-design
