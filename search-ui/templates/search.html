@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>CV Transcription Search</title>
+    <title>HTX Project Transcription Search</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         .search-container { margin-bottom: 20px; }
@@ -68,9 +68,12 @@
         const params = new URLSearchParams();
         if (query) params.append('q', query);
 
-        const API_HOST = window.location.hostname === "localhost"
-            ? "http://localhost:3000"
-            : "http://13.229.69.16:5000";
+        // const API_HOST = window.location.hostname === "localhost"
+        //     ? "http://localhost:3000"
+        //     : "http://54.255.152.4:3000";
+        
+        //const API_HOST = "http://54.255.152.4:3000";
+        const API_HOST = "";
 
         fetch(`${API_HOST}/search?${params}`)
             .then(response => response.json())
