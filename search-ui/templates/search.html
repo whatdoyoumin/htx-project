@@ -57,129 +57,125 @@
     <div id="results" class="results"></div>
 
     <script>
-        let currentAggs = {};
+    let allHits = [];
 
-        function performSearch() {
-            const query = document.getElementById('searchQuery').value;
-            const age = document.getElementById('ageFilter').value;
-            const gender = document.getElementById('genderFilter').value;
-            const accent = document.getElementById('accentFilter').value;
-            
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('results').innerHTML = '';
-            
-            const params = new URLSearchParams();
-            if (query) params.append('q', query);
-            if (age) params.append('age', age);
-            if (gender) params.append('gender', gender);
-            if (accent) params.append('accent', accent);
-            
-            fetch(`/search?${params}`)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('loading').style.display = 'none';
-                    
-                    if (data.error) {
-                        document.getElementById('results').innerHTML = 
-                            `<div style="color: red;">Error: ${data.error}</div>`;
-                        return;
-                    }
-                    
-                    updateFilters(data.aggregations);
-                    displayResults(data.hits, data.total);
-                })
-                .catch(error => {
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('results').innerHTML = 
-                        `<div style="color: red;">Error: ${error}</div>`;
-                });
-        }
+    function performSearch() {
+        const query = document.getElementById('searchQuery').value;
 
-        function updateFilters(aggs) {
-            currentAggs = aggs;
-            
-            // Update age filter
-            const ageSelect = document.getElementById('ageFilter');
-            const currentAge = ageSelect.value;
-            ageSelect.innerHTML = '<option value="">All Ages</option>';
-            if (aggs.ages && aggs.ages.buckets) {
-                aggs.ages.buckets.forEach(bucket => {
-                    const option = document.createElement('option');
-                    option.value = bucket.key;
-                    option.textContent = `${bucket.key} (${bucket.doc_count})`;
-                    ageSelect.appendChild(option);
-                });
-            }
-            ageSelect.value = currentAge;
-            
-            // Update gender filter
-            const genderSelect = document.getElementById('genderFilter');
-            const currentGender = genderSelect.value;
-            genderSelect.innerHTML = '<option value="">All Genders</option>';
-            if (aggs.genders && aggs.genders.buckets) {
-                aggs.genders.buckets.forEach(bucket => {
-                    const option = document.createElement('option');
-                    option.value = bucket.key;
-                    option.textContent = `${bucket.key} (${bucket.doc_count})`;
-                    genderSelect.appendChild(option);
-                });
-            }
-            genderSelect.value = currentGender;
-            
-            // Update accent filter
-            const accentSelect = document.getElementById('accentFilter');
-            const currentAccent = accentSelect.value;
-            accentSelect.innerHTML = '<option value="">All Accents</option>';
-            if (aggs.accents && aggs.accents.buckets) {
-                aggs.accents.buckets.forEach(bucket => {
-                    const option = document.createElement('option');
-                    option.value = bucket.key;
-                    option.textContent = `${bucket.key} (${bucket.doc_count})`;
-                    accentSelect.appendChild(option);
-                });
-            }
-            accentSelect.value = currentAccent;
-        }
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('results').innerHTML = '';
 
-        function displayResults(hits, total) {
-            const resultsDiv = document.getElementById('results');
-            
-            if (hits.length === 0) {
-                resultsDiv.innerHTML = '<div>No results found.</div>';
-                return;
-            }
-            
-            let html = `<h3>Found ${total} results</h3>`;
-            
-            hits.forEach(hit => {
-                const source = hit._source;
-                html += `
-                    <div class="result-item">
-                        <div class="result-title">${source.generated_text || 'No title'}</div>
-                        <div class="result-meta">
-                            Duration: ${source.duration || 'N/A'} | 
-                            Age: ${source.age || 'N/A'} | 
-                            Gender: ${source.gender || 'N/A'} | 
-                            Accent: ${source.accent || 'N/A'}
-                            ${source.filename ? ' | File: ' + source.filename : ''}
-                        </div>
-                        ${source.text ? `<div style="margin-top: 10px;">${source.text}</div>` : ''}
-                    </div>
-                `;
+        const params = new URLSearchParams();
+        if (query) params.append('q', query);
+
+        const API_HOST = window.location.hostname === "localhost"
+            ? "http://localhost:3000"
+            : "http://13.229.69.16:5000";
+
+        fetch(`${API_HOST}/search?${params}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loading').style.display = 'none';
+
+                if (data.error) {
+                    document.getElementById('results').innerHTML =
+                        `<div style="color: red;">Error: ${data.error}</div>`;
+                    return;
+                }
+
+                allHits = data.hits || [];
+                updateFiltersFromHits(allHits);
+                displayResults(applyLocalFilters(allHits), data.total);
+            })
+            .catch(error => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('results').innerHTML =
+                    `<div style="color: red;">Error: ${error}</div>`;
             });
-            
-            resultsDiv.innerHTML = html;
+    }
+
+    function updateFiltersFromHits(hits) {
+        const getUniqueValues = (field) => {
+            return [...new Set(hits.map(h => h._source[field]).filter(v => v && v.trim() !== ''))];
+        };
+
+        populateSelect("ageFilter", getUniqueValues("age"), "All Ages");
+        populateSelect("genderFilter", getUniqueValues("gender"), "All Genders");
+        populateSelect("accentFilter", getUniqueValues("accent"), "All Accents");
+    }
+
+    function populateSelect(selectId, values, defaultLabel) {
+        const select = document.getElementById(selectId);
+        const current = select.value;
+        select.innerHTML = `<option value="">${defaultLabel}</option>`;
+        values.forEach(v => {
+            const option = document.createElement("option");
+            option.value = v;
+            option.textContent = v;
+            select.appendChild(option);
+        });
+        select.value = current;
+    }
+
+    function applyLocalFilters(hits) {
+        const age = document.getElementById('ageFilter').value;
+        const gender = document.getElementById('genderFilter').value;
+        const accent = document.getElementById('accentFilter').value;
+
+        return hits.filter(hit => {
+            const s = hit._source;
+            return (!age || s.age === age) &&
+                   (!gender || s.gender === gender) &&
+                   (!accent || s.accent === accent);
+        });
+    }
+
+    function displayResults(filteredHits, total) {
+        const resultsDiv = document.getElementById('results');
+        if (filteredHits.length === 0) {
+            resultsDiv.innerHTML = '<div>No results found.</div>';
+            return;
         }
 
-        // Search on Enter key
-        document.getElementById('searchQuery').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                performSearch();
-            }
+        let html = `<h3>Showing ${filteredHits.length} of ${total} results</h3>`;
+
+        filteredHits.forEach(hit => {
+            const s = hit._source;
+            html += `
+                <div class="result-item">
+                    <div class="result-title">${s.generated_text || 'No title'}</div>
+                    <div class="result-meta">
+                        Duration: ${s.duration || 'N/A'} |
+                        Age: ${s.age || 'N/A'} |
+                        Gender: ${s.gender || 'N/A'} |
+                        Accent: ${s.accent || 'N/A'} |
+                        File: ${s.filename || 'N/A'}
+                    </div>
+                    ${s.text ? `<div style="margin-top: 10px;">${s.text}</div>` : ''}
+                </div>
+            `;
         });
 
-        // Load initial results
-        performSearch();
-    </script>
+        resultsDiv.innerHTML = html;
+    }
+
+    // Filters trigger re-display
+    ["ageFilter", "genderFilter", "accentFilter"].forEach(id => {
+        document.getElementById(id).addEventListener("change", () => {
+            const filtered = applyLocalFilters(allHits);
+            displayResults(filtered, allHits.length);
+        });
+    });
+
+    document.getElementById('searchQuery').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            performSearch();
+        }
+    });
+
+    performSearch();
+</script>
+
+
 </body>
 </html>

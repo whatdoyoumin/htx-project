@@ -8,7 +8,7 @@ services:
       - discovery.seed_hosts=elasticsearch2
       - cluster.initial_master_nodes=es1,es2
       - bootstrap.memory_lock=true
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - ES_JAVA_OPTS=-Xms256m -Xmx256m
       - xpack.security.enabled=false
       - xpack.security.http.ssl.enabled=false
       - xpack.security.transport.ssl.enabled=false
@@ -38,7 +38,7 @@ services:
       - discovery.seed_hosts=elasticsearch1
       - cluster.initial_master_nodes=es1,es2
       - bootstrap.memory_lock=true
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - ES_JAVA_OPTS=-Xms256m -Xmx256m
       - xpack.security.enabled=false
       - xpack.security.http.ssl.enabled=false
       - xpack.security.transport.ssl.enabled=false
@@ -71,7 +71,7 @@ services:
       dockerfile: asr/Dockerfile
     container_name: asr
     ports:
-      - "5000:5000"
+      - "8001:8001"
     networks:
       - es_net
 

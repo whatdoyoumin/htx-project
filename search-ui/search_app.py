@@ -16,14 +16,6 @@ es = Elasticsearch(
 )
 
 
-
-# # Connect to Elasticsearch
-# es = Elasticsearch([{
-#     'host': os.getenv('ELASTICSEARCH_HOST', 'elasticsearch1'),
-#     'port': 9200,
-#     'scheme': 'http'
-# }])
-
 @app.route('/')
 def index():
     return render_template('search.html')

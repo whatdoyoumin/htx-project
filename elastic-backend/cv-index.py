@@ -117,6 +117,7 @@ import pandas as pd
 import requests
 import json
 import os
+import time
 
 # Resolve host + port separately (Docker DNS-compatible)
 ELASTIC_HOSTNAME = os.getenv("ELASTICSEARCH_HOST", "elasticsearch1")

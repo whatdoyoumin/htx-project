@@ -7,9 +7,12 @@ import time
 
 CSV_DIR   = "../common_voice"
 AUDIO_DIR = os.path.join(CSV_DIR,"cv-valid-dev")
-
 CSV_FILE  = os.path.join(CSV_DIR, "cv-valid-dev.csv")
-ASR_API_URL = "http://localhost:8001/asr"
+#ASR_API_URL = "http://localhost:8001/asr" local development
+#ASR_API_URL = os.getenv('ASR_API_URL', "http://172.31.22.243:5000/asr") #deploy on server
+
+# Use environment variable if set, otherwise default to localhost
+ASR_API_URL = os.getenv("ASR_API_URL", "http://localhost:8001/asr")
 
 
 def transcribe_and_update_csv():
@@ -71,7 +74,7 @@ def transcribe_and_update_csv():
         # Optional: Add a small delay to avoid overwhelming the API
         # time.sleep(0.1)
 
-    # Save the updated CSV file [cite: 22]
+    # Save the updated CSV file with transcription output
     output_csv_path = os.path.join(CSV_DIR, "cv-valid-dev_transcribed.csv")
     df.to_csv(output_csv_path, index=False)
     print(f"\nTranscription complete!")

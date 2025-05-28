@@ -12,6 +12,13 @@ import tempfile
 
 app = FastAPI()
 
+@app.get("/ping")
+async def ping():
+    """
+    Health check endpoint.
+    Returns "pong" if the service is running.
+    """
+    return "pong"
 
 # Load the ASR model globally to avoid re-loading for each request
 try:
@@ -21,13 +28,6 @@ except Exception as e:
     print(f"Error loading ASR model: {e}")
     asr_pipeline = None # Handle case where model loading fails
 
-@app.get("/ping")
-async def ping():
-    """
-    Health check endpoint.
-    Returns "pong" if the service is running.
-    """
-    return "pong"
 
 @app.post("/asr")
 async def transcribe_audio(file: UploadFile = File(...)):
@@ -103,3 +103,6 @@ async def transcribe_audio(file: UploadFile = File(...)):
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8001)
+
+
+    
