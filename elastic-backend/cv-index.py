@@ -120,9 +120,16 @@ import os
 import time
 
 # Resolve host + port separately (Docker DNS-compatible)
-ELASTIC_HOSTNAME = os.getenv("ELASTICSEARCH_HOST", "elasticsearch1")
+#ELASTIC_HOSTNAME = os.getenv("ELASTICSEARCH_HOST", "elasticsearch1") 
+ELASTIC_HOSTNAME = os.getenv("ELASTICSEARCH_HOST", "localhost")
+
 ELASTIC_PORT     = os.getenv("ELASTICSEARCH_PORT", "9200")
 ELASTIC_HOST     = f"http://{ELASTIC_HOSTNAME}:{ELASTIC_PORT}"
+
+
+
+
+
 
 INDEX_NAME       = "cv-transcriptions"
 
@@ -227,3 +234,5 @@ if __name__ == "__main__":
     load_and_index_data()
     verify_index()
     print("\n🎉 All done!")
+
+

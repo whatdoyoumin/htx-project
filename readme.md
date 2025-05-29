@@ -75,6 +75,7 @@ unzip common_voice.zip -d common_voice
 
 ### 1. Start All Services
 
+Open Docker Desktop
 ```
 docker compose up -d --build
 ```
@@ -101,30 +102,27 @@ Run the ASR microservice
 In another terminal ,navigate to the htx-project folder.
 
 ( if having ffmpeg issues, install ffmpeg to path and run from command prompt instead of bash)
+
 ```
 source ./venv/Scripts/activate # if using virtual environment
 cd asr
 python cv-decode.py
 
 ```
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
 
 Ensure your ASR microservice is running at: http://localhost:8001/asr
 
-if using SEED laptop , please disable cloudflare.
+if using SEED laptop , please disable cloudflare. this will output the transcribed file under the common_voice.
 
 
+I have already included the transcribed file in common voice folder for convenience, so you may skip this step.
 
-### 3. Index Into Elasticsearch
 
-```
-python elastic-backend/cv-index.py
-```
-
-### 4. To run all the containers
-```
-$ docker compose up -d
+### 3. To build the Docker Images and run all the containers
 ```
 docker compose up -d --build
+```
 
 ## Endpoints
 
@@ -145,6 +143,13 @@ docker compose up -d --build
 ```
 curl -X POST      -F "file=@/path/to/sample.mp3"      http://localhost:8001/asr
 ```
+
+May run this command to create index before running docker compose, if want to manage 1 less container.
+
+```
+python elastic-backend/cv-index.py
+```
+
 
 ## Deployment Architecture
 
