@@ -40,7 +40,7 @@ htx-project/
 - All services Dockerized and deployable locally or on AWS EC2
 - Public web-accessible deployment using `docker-compose`
 
-## Setup Instructions
+## Setup Instructions to run locally
 
 ### 1. Clone the Repository
 
@@ -49,7 +49,7 @@ git clone https://github.com/whatdoyoumin/htx-project.git
 cd htx-project
 ```
 
-### 2. Install Docker & Docker Compose
+### 2. Assumptions
 
 Make sure both Docker and the Compose plugin are installed.
 
@@ -57,6 +57,8 @@ Make sure both Docker and the Compose plugin are installed.
 docker -v
 docker compose version
 ```
+
+This instructions assume that Docker Desktop, FFMPEG and Python are installed in the user's environment
 
 ### 3. Download Common Voice Dataset
 
@@ -77,11 +79,40 @@ unzip common_voice.zip -d common_voice
 docker compose up -d --build
 ```
 
-### 2. Transcribe Dataset
+Optional - set up virtual environment
 
 ```
-python asr/cv-decode.py
+python -m venv venv
+source ./venv/Scripts/activate
+
 ```
+
+Install required libraries
+
+```
+pip install -r requirements.txt
+
+```
+
+### 2. Transcribe Dataset
+
+Run the ASR microservice
+
+In another terminal ,navigate to the htx-project folder.
+
+( if having ffmpeg issues, install ffmpeg to path and run from command prompt instead of bash)
+```
+source ./venv/Scripts/activate # if using virtual environment
+cd asr
+python cv-decode.py
+
+```
+
+Ensure your ASR microservice is running at: http://localhost:8001/asr
+
+if using SEED laptop , please disable cloudflare.
+
+
 
 ### 3. Index Into Elasticsearch
 
@@ -117,7 +148,9 @@ curl -X POST      -F "file=@/path/to/sample.mp3"      http://localhost:8001/asr
 
 ## Deployment Architecture
 
-“To reduce complexity and deployment time, a single `docker-compose.yml` is reused across 3 EC2 instances. Each machine only runs the services it needs via `docker compose up service-name`.”
+The application was split into four different EC2 instances, with Search UI, ASR API, and Elasticsearch nodes split into different instances. This ensures high availability of the application. To reduce complexity and deployment time, a single docker-compose.yml is reused across 3 EC2 instances. Each machine only runs the services it needs via docker compose up service-name. 
+
+This approach simplifies deployment by maintaining a single configuration file, optimizes resource usage by running only necessary services per instance, improves fault isolation to minimize downtime, and enables independent scaling and easier debugging of each component.
 
 | EC2 Instance | Role                        | Services                |
 |--------------|-----------------------------|-------------------------|
@@ -136,8 +169,9 @@ See `deployment-design/design.pdf` for the full AWS diagram.
 
 ## Public Deployment (Demo)
 
-- http://ec2-54-255-152-4.ap-southeast-1.compute.amazonaws.com
+- http://ec2-54-255-152-4.ap-southeast-1.compute.amazonaws.com:3000/
 
 ## License
 
+By 
 provided by HTX for technical assessment purposes.
