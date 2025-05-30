@@ -14,5 +14,5 @@ harvard.mp3
 common_voice.zip
 test_connection.py
 images
-docker-compose.prod.yml
+docker-compose2.yml
 common_voice

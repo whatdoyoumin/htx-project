@@ -115,8 +115,7 @@ Ensure your ASR microservice is running at: http://localhost:8001/asr
 
 if using SEED laptop , please disable cloudflare. this will output the transcribed file under the common_voice.
 
-
-I have already included the transcribed file in common voice folder for convenience, so you may skip this step.
+I have already included the transcribed file in root directory for convenience in case to skip the data transcribe step, please include under common_voice folder as common_voice/cv-valid-dev.transcribed.csv.
 
 
 ### 3. To build the Docker Images and run all the containers
